@@ -27,6 +27,7 @@ var SCHEDULE_INTERVAL = 100 // in ms
 var LOOKAHEAD_WINDOW = 0.200 // in sec
 var RECORDING_TRIGGER_ID = -1;
 var CHANGING_TRIGGER_ID = -1;
+var CHANGING_TEMPO = false;
 
 /* END SETTINGS */
 
@@ -186,15 +187,20 @@ function change_sound(n_trigger){
 /* INTERFACE */
 
 function on_kick_receive(){
-    console.log("KICK!");
-    // If on recording, play corresponding sound and add it to the sequencer
-    if (RECORDING_TRIGGER_ID != -1) {
-        if (CURRENT_SEQUENCE_POSITION != -1){
-            if (SEQUENCE[RECORDING_TRIGGER_ID][CURRENT_SEQUENCE_POSITION] != 'x'){
-                play_sound(RECORDING_TRIGGER_ID);
+
+    if (CHANGING_TEMPO == false){
+        // If on recording, play corresponding sound and add it to the sequencer
+        if (RECORDING_TRIGGER_ID != -1) {
+            if (CURRENT_SEQUENCE_POSITION != -1){
+                if (SEQUENCE[RECORDING_TRIGGER_ID][CURRENT_SEQUENCE_POSITION] != 'x'){
+                    play_sound(RECORDING_TRIGGER_ID);
+                }
+                toggle_sequence_element(RECORDING_TRIGGER_ID, CURRENT_SEQUENCE_POSITION);
             }
-            toggle_sequence_element(RECORDING_TRIGGER_ID, CURRENT_SEQUENCE_POSITION);    
         }
+    } else {
+        // If changing tempo call function to deal with the data
+        handle_new_kick_tempo_change();
     }
 }
 
@@ -246,7 +252,7 @@ function init_stuff(){
         if(e.keyCode==13){
             var input_tempo = parseInt($('#bpm_input').val(), 10);
             if (!isNaN(input_tempo)){
-                TEMPO = input_tempo;
+                stop_changing_tempo(input_tempo)
                 $('#bpm_input').blur ();
             } else {
                 $('#bpm_input').val(TEMPO);
@@ -426,4 +432,49 @@ function clear_track(track_id){
         SEQUENCE[track_id][i] = '_';
     }
     render_sequencer();
+}
+
+// Tempo change
+var CHANGING_TEMPO_VALUES = [];
+var LAST_TEMPO_KICK = undefined;
+var SECONDS_TO_WAIT_FOR_STOP_TEMPO_CHANGE = 1.5;
+var TEMPO_TIMER;
+
+function start_changing_tempo(){
+    CHANGING_TEMPO = true;
+    $('#bpm_input').addClass('myactive');
+}
+
+function stop_changing_tempo(tempo){
+    TEMPO = tempo;
+    $('#bpm_input').val(tempo);
+    CHANGING_TEMPO = false;
+    LAST_TEMPO_KICK = undefined;
+    $('#bpm_input').removeClass('myactive');
+}
+
+function handle_new_kick_tempo_change(){
+    var current_time = Date.now();
+    if (LAST_TEMPO_KICK != undefined){
+        var time_since_last_kick = current_time - LAST_TEMPO_KICK;
+        var detected_bpm = Math.round(60*1000/(time_since_last_kick));
+        CHANGING_TEMPO_VALUES.push(detected_bpm);
+        var new_tempo = get_new_tempo_from_tempo_values(CHANGING_TEMPO_VALUES);
+        $('#bpm_input').val(new_tempo);
+        window.clearTimeout(TEMPO_TIMER);
+        TEMPO_TIMER = setTimeout(function(){
+             var current_time = Date.now();
+             var time_since_last_kick = current_time - LAST_TEMPO_KICK;
+             if (time_since_last_kick >= SECONDS_TO_WAIT_FOR_STOP_TEMPO_CHANGE * 1000 * 0.95){
+                 stop_changing_tempo(get_new_tempo_from_tempo_values(CHANGING_TEMPO_VALUES));
+             }
+        }, SECONDS_TO_WAIT_FOR_STOP_TEMPO_CHANGE * 1000);
+    }
+    LAST_TEMPO_KICK = current_time;
+}
+
+function get_new_tempo_from_tempo_values(tempo_values){
+    tempo_values = tempo_values.sort(function(a, b){return a-b});
+    var middle_pos = Math.floor(tempo_values.length/2);
+    return tempo_values[middle_pos];
 }
