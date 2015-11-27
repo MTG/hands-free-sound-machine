@@ -207,8 +207,13 @@ function init_stuff(){
     freesound.setToken("d31c795be3f70f7f04b21aeca4c5b48a599db6e9");
     set_progress_bar_value(0);
     $('#bpm_input').val(TEMPO);
-    load_from_freesound_text_search("percussion", all_triggers=true);
-    randomize_sequence(0.15);
+    //load_from_freesound_text_search("percussion", all_triggers=true);
+    load_from_freesound_text_search("kick drum", false, 3);
+    load_from_freesound_text_search("snare drum acoustic", false, 2);
+    load_from_freesound_text_search("closed hi-hat", false, 1);
+    load_from_freesound_text_search("ride cymbal", false, 0);
+
+    randomize_sequence(0.25);
     render_sequencer();
     sequencer_wrapper = $("#sequencer_wrapper").show();
     //drawPlayhead();
@@ -262,7 +267,7 @@ function set_trigger_info_and_sound(sound, trigger_id){
     load_sound(trigger_id, sound.previews['preview-hq-mp3']); 
 }
 
-function load_from_freesound_text_search(query, all_triggers){
+function load_from_freesound_text_search(query, all_triggers, trigger_id){
     if (query == undefined){
         query = $("#query_terms").val();
     }
@@ -280,10 +285,16 @@ function load_from_freesound_text_search(query, all_triggers){
                     if (all_triggers){
                         set_trigger_info_and_sound(sound, i);
                     } else {
-                        if (i == CHANGING_TRIGGER_ID){
+                        var trigger_id_to_change;
+                        if (trigger_id != undefined){
+                            trigger_id_to_change = trigger_id;
+                        } else {
+                            trigger_id_to_change = CHANGING_TRIGGER_ID;
+                        }
+                        if (i == trigger_id_to_change){
                             set_trigger_info_and_sound(sound, i);
                             $("#query_controls").hide();
-                            $("#change_sound_"  + CHANGING_TRIGGER_ID).removeClass("active");
+                            $("#change_sound_"  + trigger_id_to_change).removeClass("active");
                             CHANGING_TRIGGER_ID = -1;
                         }
                     }
@@ -358,6 +369,7 @@ function render_sequencer(){
         html_line += '<div class="seq_controls"><div class="btn-group btn-group-lg">';
         html_line += '<button id="toggle_recording_' + i.toString(10) + '" type="button" class="btn btn-lg btn-default seq_cell" onclick="toggle_recording(' + i + ')"><span class="glyphicon glyphicon-record"></button>';
         html_line += '<button id="change_sound_' + i.toString(10) + '" type="button" class="btn btn-lg btn-default seq_cell" onclick="change_sound(' + i + ')"><span class="glyphicon glyphicon-refresh"></button>';
+        html_line += '<button type="button" class="btn btn-lg btn-default seq_cell" onclick="clear_track(' + i + ')"><span class="glyphicon glyphicon-trash"></button>';
         html_line += '</div></div>';
         
         for (var j=0; j<SEQUENCE_LENGTH; j++) {
@@ -406,5 +418,12 @@ function toggle_sequence_element(row, col){
 
 function randomize_sequence(prob){
     SEQUENCE = create_random_pattern(prob);
+    render_sequencer();
+}
+
+function clear_track(track_id){
+    for (var i=0; i<SEQUENCE_LENGTH; i++){
+        SEQUENCE[track_id][i] = '_';
+    }
     render_sequencer();
 }
