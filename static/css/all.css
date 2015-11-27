@@ -1,0 +1,147 @@
+
+#osc_console {
+	background-color: red;
+	position:fixed;
+	top:0px;
+	left:0px;
+	width:100px;
+	height:100%;
+	overflow: scroll;
+}
+
+/*body { background:#222; }*/
+
+.jumbotron {
+    margin-top: 20px;
+}
+
+.popover_content {
+    width:240px;
+    height:180px;
+    text-align: left;
+}
+
+.trigger {
+    width: 100px;
+    height: 100px;
+    margin-right: 5px;
+}
+
+.trigger_row {
+    margin-bottom: 10px;
+}
+
+#trigger_pad_wrapper {
+    text-align: center;
+}
+
+#trigger_pad {
+    border: solid 1px #eee;
+    border-radius: 20px;
+    padding: 20px;
+    padding-right: 15px;
+    padding-bottom: 10px;
+    width: 470px;
+    height: 470px;
+    margin: 0 auto;
+}
+
+#top_wrapper {
+    text-align: center;
+    margin-bottom: 50px;
+    margin-top:80px;
+}
+
+#top {
+    margin: 0 auto;
+    width:560px;
+}
+
+#mode_controls {
+    margin: 0 auto;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    width:600px;
+}
+
+#mode_selector {
+    margin-top: 15px;
+}
+
+#bottom_controls_wrapper {
+    margin-top: 15px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+#bottom_controls {
+    margin: 0 auto;
+    width:510px;
+}
+
+.trigger_active{
+  border: 2px solid white;
+  -webkit-transition: border .1s linear;
+  transition: border .1s linear;
+}
+
+.trigger_label {
+    font-size: 40px;
+    line-height: 77px;
+}
+
+#sequencer_wrapper {
+    text-align: center;
+    overflow: scroll;
+    display: none;
+}
+
+#sequencer {
+    padding: 18px;
+    margin: 0 auto;
+    width: 1050px;
+    /*border: solid 1px #eee;
+    border-radius: 20px;*/
+}
+
+.seq_controls {
+	margin-right: 10px;
+	display: inline;	
+}
+
+.seq_cell {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    border-radius: 3px;
+    margin-bottom: 2px;
+}
+
+.seq_row {
+
+}
+
+.cell_wrapper {
+    padding: 2px;
+    padding-right: 1px;
+    padding-bottom: 4px;
+    padding-top: 4px;
+    display: inline;
+}
+
+.current_cell {
+    border-radius: 10px;
+}
+
+
+.my_disabled {
+    opacity: 0.5;
+}
+
+#dialog_results {
+    margin-top:15px;
+}
+.result {
+    display: block;
+    height: 40px;
+}
