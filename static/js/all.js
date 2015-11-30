@@ -10,6 +10,7 @@ var LICENSE_NAMES = {
     'http://creativecommons.org/licenses/sampling+/1.0/': 'Sampling+'
 };
 var NUM_TRIGGERS = 4;
+var TRIGGER_NAMES = [];
 var KEY_MAPPING = [
     '3', '4', '5', '6',
     'W', 'E', 'R', 'T',
@@ -218,6 +219,9 @@ function init_stuff(){
     load_from_freesound_text_search("snare drum acoustic", false, 2);
     load_from_freesound_text_search("closed hi-hat", false, 1);
     load_from_freesound_text_search("ride cymbal", false, 0);
+    for (var i=0; i<NUM_TRIGGERS; i++){
+        TRIGGER_NAMES.push("");
+    }
 
     randomize_sequence(0.25);
     render_sequencer();
@@ -262,7 +266,7 @@ function init_stuff(){
     });
 }
 
-function set_trigger_info_and_sound(sound, trigger_id){
+function set_trigger_info_and_sound(sound, trigger_id, query){
     TRIGGERS_SOUND_INFORMATION.push({'id':sound.id,
                                      'name':sound.name,
                                      'license':sound.license,
@@ -270,6 +274,7 @@ function set_trigger_info_and_sound(sound, trigger_id){
                                      'description':sound.description,
                                      'created':sound.created
     });
+    TRIGGER_NAMES[trigger_id] = query;
     load_sound(trigger_id, sound.previews['preview-hq-mp3']); 
 }
 
@@ -282,6 +287,7 @@ function load_from_freesound_text_search(query, all_triggers, trigger_id){
     var filter = "duration:[0%20TO%200.5]";
     var fields = "id,name,previews,license,username,description,created";
     var page_size = 100;
+    var current_query = query
     freesound.textSearch(query, {page:1, filter:filter, fields:fields, page_size:page_size, group_by_pack:1},
         function(sounds){
             sounds.results = shuffle(sounds.results); // randomize
@@ -289,7 +295,7 @@ function load_from_freesound_text_search(query, all_triggers, trigger_id){
                 if (i < NUM_TRIGGERS){
                     var sound = sounds.results[i];
                     if (all_triggers){
-                        set_trigger_info_and_sound(sound, i);
+                        set_trigger_info_and_sound(sound, i, current_query);
                     } else {
                         var trigger_id_to_change;
                         if (trigger_id != undefined){
@@ -298,7 +304,7 @@ function load_from_freesound_text_search(query, all_triggers, trigger_id){
                             trigger_id_to_change = CHANGING_TRIGGER_ID;
                         }
                         if (i == trigger_id_to_change){
-                            set_trigger_info_and_sound(sound, i);
+                            set_trigger_info_and_sound(sound, i, current_query);
                             $("#query_controls").hide();
                             $("#change_sound_"  + trigger_id_to_change).removeClass("active");
                             CHANGING_TRIGGER_ID = -1;
@@ -307,14 +313,15 @@ function load_from_freesound_text_search(query, all_triggers, trigger_id){
                 }
             }
             set_progress_bar_value(100);
+            render_sequencer();
         },function(){ console.log("Error while searching...")}
     );
 }
 
 function load_sound(index, url){
     var name = index.toString();
-    var soundMap = {}
-    soundMap[name] = url
+    var soundMap = {};
+    soundMap[name] = url;
     loadSounds(sampler,soundMap, function(){});
 }
 
@@ -372,6 +379,7 @@ function render_sequencer(){
         var cell_class_idx = Math.floor(i % 4);
         var html_line = '';
         html_line += '<div class="seq_row">';
+        html_line += '<div id="name_' + i.toString(10) + '" class="track_name">' + TRIGGER_NAMES[i] + '</div>';
         html_line += '<div class="seq_controls"><div class="btn-group btn-group-lg">';
         html_line += '<button id="toggle_recording_' + i.toString(10) + '" type="button" class="btn btn-lg btn-default seq_cell" onclick="toggle_recording(' + i + ')"><span class="glyphicon glyphicon-record"></button>';
         html_line += '<button id="change_sound_' + i.toString(10) + '" type="button" class="btn btn-lg btn-default seq_cell" onclick="change_sound(' + i + ')"><span class="glyphicon glyphicon-refresh"></button>';

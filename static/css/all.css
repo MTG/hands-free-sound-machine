@@ -99,7 +99,7 @@
 #sequencer {
     padding: 18px;
     margin: 0 auto;
-    width: 1050px;
+    width: 1150px;
     /*border: solid 1px #eee;
     border-radius: 20px;*/
 }
@@ -119,6 +119,16 @@
 
 .seq_row {
 
+}
+
+.track_name {
+    width: 90px;
+    height: 30px;
+    display: inline-block;
+    overflow: hidden;
+    text-align: right;
+    margin-right:5px;
+    line-height: 35px;
 }
 
 .cell_wrapper {
