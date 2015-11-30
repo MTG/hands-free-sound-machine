@@ -451,6 +451,9 @@ var TEMPO_TIMER;
 function start_changing_tempo(){
     CHANGING_TEMPO = true;
     $('#bpm_input').addClass('myactive');
+    if (RECORDING_TRIGGER_ID != -1){
+        toggle_recording(RECORDING_TRIGGER_ID);
+    }
 }
 
 function stop_changing_tempo(tempo){
