@@ -1,4 +1,4 @@
-# hands-free-drum-machine
+# Hands-free Drum Machine
 
 ## Installation instructions
 
