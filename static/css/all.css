@@ -160,3 +160,7 @@ input#bpm_input.form-control.myactive {
     background-color: #99c99b;
     color:white;
 }
+
+#voice_control_feedback_wrapper {
+    text-align: center;
+}

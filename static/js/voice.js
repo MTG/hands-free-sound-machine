@@ -3,64 +3,81 @@ var recognizing = false;
 var restart_on_end = true;
 var process_on_end = true;
 var restart_on_error = true;
+var SPEECH_CONTROL_SUPPORTED = true;
+var NOT_ALLOWED_ERROR = false;
+var recognition = undefined;
 
-if (!('webkitSpeechRecognition' in window)) {
-    console.log("Speech recognition not supported...")
-} else {
-    console.log("Setting up speech recognition...")
-    var recognition = new webkitSpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.onstart = function() {
-        recognizing = true;
-    };
-    recognition.onerror = function(event) {
-        console.log("Speech, ERROR: " + event.error);
-        if (event.error == 'no-speech') {
-            ////alert('info_no_speech');
-        }
-        if (event.error == 'audio-capture') {
-            ////alert('info_no_microphone');
-            restart_on_error = false;
-        }
-        if (event.error == 'not-allowed') {
-            restart_on_error = false;
-        }
-        if (restart_on_error){
-            startSpeechToText();
-        }
-    };
-    recognition.onend = function() {
-        console.log("Speech, END");
-        recognizing = false;
-        if (restart_on_end){
-            startSpeechToText();
-        }
-        if (process_on_end){
-            processTranscript(final_transcript);
-        }
-    };
-    recognition.onresult = function(event) {
-        console.log("Speech, RESULT");
-        var interim_transcript = '';
-        for (var i = event.resultIndex; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-                final_transcript += event.results[i][0].transcript;
-            } else {
-                interim_transcript += event.results[i][0].transcript;
+$(document).ready(function() {
+    if (!('webkitSpeechRecognition' in window)) {
+        console.log("Speech recognition not supported...");
+        SPEECH_CONTROL_SUPPORTED = false;
+        $("#voice_control_instructions").html("Voice control not supported... (only runs on Chrome)");
+    } else {
+        console.log("Setting up speech recognition...");
+        recognition = new webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.onstart = function() {
+            recognizing = true;
+        };
+        recognition.onerror = function(event) {
+            $("#voice_control_recording_indicator").html("<h4>ups, an error occurred... relaod?</h4>");
+            console.log("Speech, ERROR: " + event.error);
+            if (event.error == 'no-speech') {
+                ////alert('info_no_speech');
             }
-        }
-        recognizing = false;
-        recognition.stop();
-        processTranscript(final_transcript);
+            if (event.error == 'audio-capture') {
+                ////alert('info_no_microphone');
+                restart_on_error = false;
+            }
+            if (event.error == 'not-allowed') {
+                NOT_ALLOWED_ERROR = true;
+                restart_on_error = false;
+            }
+            if (restart_on_error == true){
+                startSpeechToText();
+            }
+        };
+        recognition.onend = function() {
+            console.log("Speech, END");
+            recognizing = false;
+            if ((restart_on_end) && (!NOT_ALLOWED_ERROR)){
+                startSpeechToText();
+            }
+            if ((process_on_end) && (!NOT_ALLOWED_ERROR)){
+                $("#voice_control_recording_indicator").html("<h4>hmmmm...</h4>");
+                processTranscript(final_transcript);
+            }
+        };
+        recognition.onresult = function(event) {
+            console.log("Speech, RESULT");
+            $("#voice_control_recording_indicator").html("<h4>hmmmm...</h4>");
+            var interim_transcript = '';
+            for (var i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    final_transcript += event.results[i][0].transcript;
+                } else {
+                    interim_transcript += event.results[i][0].transcript;
+                }
+            }
+            recognizing = false;
+            recognition.stop();
+            processTranscript(final_transcript);
+            startSpeechToText();
+        };
+    }
+
+    if (SPEECH_CONTROL_SUPPORTED) {
         startSpeechToText();
-    };
-}
+    }
+
+});
 
 function startSpeechToText(){
     if (!recognizing) {
         recognition.lang = "en-US";
         recognition.start();
+        $("#voice_control_recording_indicator").html("<h4>go ahead, I'm listening...</h4>");
     }
 }
 
@@ -89,6 +106,9 @@ function get_number_in_transcript(transcript){
     if (transcript.indexOf("two") > -1){
         return 2;
     }
+    if (transcript.indexOf("to") > -1){
+        return 2;
+    }
     if (transcript.indexOf("3") > -1){
         return 3;
     }
@@ -109,6 +129,10 @@ VOICE_CHANGING_SOUND = false;
 function processTranscript(transcript){
     transcript = transcript.toLowerCase();
     console.log("Processing transcript: " + transcript);
+    $("#voice_control_output").html(transcript);
+    setTimeout(function(){
+        $("#voice_control_output").html("");
+    }, 2000);
 
     if (!VOICE_CHANGING_SOUND){
         if (contains_string_or_strings(transcript, ["play"])){
@@ -136,7 +160,7 @@ function processTranscript(transcript){
                 clear_track(number - 1);
             }
         }
-        else if (contains_string_or_strings(transcript, ["tempo"])){
+        else if (contains_string_or_strings(transcript, ["tempo", "temple"])){
             start_changing_tempo();
         }
     } else {
@@ -146,5 +170,3 @@ function processTranscript(transcript){
     }
     final_transcript = '';
 }
-
-startSpeechToText();
