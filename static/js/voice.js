@@ -120,6 +120,9 @@ function get_number_in_transcript(transcript){
     if (transcript.indexOf("three") > -1){
         return 3;
     }
+    if (transcript.indexOf("free") > -1){
+        return 3;
+    }
     if (transcript.indexOf("4") > -1){
         return 4;
     }
@@ -151,7 +154,7 @@ function processTranscript(transcript){
                 start_sequencer();
                 understood_command = true;
             }
-            else if (contains_string_or_strings(transcript, ["stop"])){
+            else if (contains_string_or_strings(transcript, ["stop", "stuff"])){
                 stop_sequencer();
                 understood_command = true;
             }
