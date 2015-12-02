@@ -2,6 +2,7 @@ var final_transcript = '';
 var recognizing = false;
 var restart_on_end = true;
 var process_on_end = true;
+var process_on_result = false;
 var restart_on_error = true;
 var SPEECH_CONTROL_SUPPORTED = true;
 var NOT_ALLOWED_ERROR = false;
@@ -41,17 +42,14 @@ $(document).ready(function() {
         recognition.onend = function() {
             console.log("Speech, END");
             recognizing = false;
+            if ((process_on_end) && (!NOT_ALLOWED_ERROR)){
+                processTranscript(final_transcript);
+            }
             if ((restart_on_end) && (!NOT_ALLOWED_ERROR)){
                 startSpeechToText();
             }
-            if ((process_on_end) && (!NOT_ALLOWED_ERROR)){
-                $("#voice_control_recording_indicator").html("<h4>hmmmm...</h4>");
-                processTranscript(final_transcript);
-            }
         };
         recognition.onresult = function(event) {
-            console.log("Speech, RESULT");
-            $("#voice_control_recording_indicator").html("<h4>hmmmm...</h4>");
             var interim_transcript = '';
             for (var i = event.resultIndex; i < event.results.length; ++i) {
                 if (event.results[i].isFinal) {
@@ -60,10 +58,15 @@ $(document).ready(function() {
                     interim_transcript += event.results[i][0].transcript;
                 }
             }
-            recognizing = false;
-            recognition.stop();
-            processTranscript(final_transcript);
-            startSpeechToText();
+
+            if (process_on_result){
+                console.log("Speech, RESULT");
+                $("#voice_control_recording_indicator").html("<h4>hmmmm...</h4>");
+                recognizing = false;
+                recognition.stop();
+                processTranscript(final_transcript);
+                startSpeechToText();
+            }
         };
     }
 
@@ -77,7 +80,9 @@ function startSpeechToText(){
     if (!recognizing) {
         recognition.lang = "en-US";
         recognition.start();
-        $("#voice_control_recording_indicator").html("<h4>go ahead, I'm listening...</h4>");
+        setTimeout(function(){
+            $("#voice_control_recording_indicator").html("<h4>go ahead, I'm listening...</h4>");
+        }, 1000);
     }
 }
 
@@ -121,52 +126,73 @@ function get_number_in_transcript(transcript){
     if (transcript.indexOf("four") > -1){
         return 4;
     }
+    if (transcript.indexOf("for") > -1){
+        return 4;
+    }
     return -1;
 }
 
 
 VOICE_CHANGING_SOUND = false;
 function processTranscript(transcript){
-    transcript = transcript.toLowerCase();
-    console.log("Processing transcript: " + transcript);
-    $("#voice_control_output").html(transcript);
-    setTimeout(function(){
-        $("#voice_control_output").html("");
-    }, 2000);
+    if (transcript != ""){
+        transcript = transcript.toLowerCase();
+        console.log("Processing transcript: " + transcript);
+        if (transcript != ""){
+            $("#voice_control_output").html(transcript);
+        }
+        setTimeout(function(){
+            $("#voice_control_output").html("");
+        }, 5000);
 
-    if (!VOICE_CHANGING_SOUND){
-        if (contains_string_or_strings(transcript, ["play"])){
-            start_sequencer();
-        }
-        else if (contains_string_or_strings(transcript, ["stop"])){
-            stop_sequencer();
-        }
-        else if (contains_string_or_strings(transcript, ["record"])){
-            var number = get_number_in_transcript(transcript);
-            if (number > -1) {
-                toggle_recording(number - 1);
+        var understood_command = false;
+        if (!VOICE_CHANGING_SOUND){
+            if (contains_string_or_strings(transcript, ["play", "start", "star"])){
+                start_sequencer();
+                understood_command = true;
             }
-        }
-        else if (contains_string_or_strings(transcript, ["search"])){
-            var number = get_number_in_transcript(transcript);
-            if (number > -1) {
-                change_sound(number - 1);
-                VOICE_CHANGING_SOUND = true;
+            else if (contains_string_or_strings(transcript, ["stop"])){
+                stop_sequencer();
+                understood_command = true;
             }
-        }
-        else if (contains_string_or_strings(transcript, ["clear"])){
-            var number = get_number_in_transcript(transcript);
-            if (number > -1) {
-                clear_track(number - 1);
+            else if (contains_string_or_strings(transcript, ["record", "regard"])){
+                var number = get_number_in_transcript(transcript);
+                if (number > -1) {
+                    toggle_recording(number - 1);
+                    understood_command = true;
+                }
             }
+            else if (contains_string_or_strings(transcript, ["search"])){
+                var number = get_number_in_transcript(transcript);
+                if (number > -1) {
+                    change_sound(number - 1);
+                    VOICE_CHANGING_SOUND = true;
+                    understood_command = true;
+                }
+            }
+            else if (contains_string_or_strings(transcript, ["clear"])){
+                var number = get_number_in_transcript(transcript);
+                if (number > -1) {
+                    clear_track(number - 1);
+                    understood_command = true;
+                }
+            }
+            else if (contains_string_or_strings(transcript, ["tempo", "temple", "september"])){
+                start_changing_tempo();
+                understood_command = true;
+            }
+        } else {
+            $("#query_terms").val(transcript);
+            load_from_freesound_text_search();
+            VOICE_CHANGING_SOUND = false;
+            understood_command = true;
         }
-        else if (contains_string_or_strings(transcript, ["tempo", "temple"])){
-            start_changing_tempo();
+        final_transcript = '';
+
+        if (understood_command){
+            $("#voice_control_recording_indicator").html("<h4>ok!</h4>");
+        } else {
+            $("#voice_control_recording_indicator").html("<h4>hmmm... I think I missed something...</h4>");
         }
-    } else {
-        $("#query_terms").val(transcript);
-        load_from_freesound_text_search();
-        VOICE_CHANGING_SOUND = false;
     }
-    final_transcript = '';
 }

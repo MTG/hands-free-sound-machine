@@ -290,6 +290,13 @@ function load_from_freesound_text_search(query, all_triggers, trigger_id){
     var current_query = query
     freesound.textSearch(query, {page:1, filter:filter, fields:fields, page_size:page_size, group_by_pack:1},
         function(sounds){
+            if ((sounds.results.length == 0) && (CHANGING_TRIGGER_ID != -1)){
+                // No results found, close
+                $("#query_controls").hide();
+                $("#change_sound_"  + CHANGING_TRIGGER_ID).removeClass("active");
+                CHANGING_TRIGGER_ID = -1;
+            }
+
             sounds.results = shuffle(sounds.results); // randomize
             for (var i in sounds.results){
                 if (i < NUM_TRIGGERS){
