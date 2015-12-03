@@ -164,3 +164,9 @@ input#bpm_input.form-control.myactive {
 #voice_control_feedback_wrapper {
     text-align: center;
 }
+
+#footer_wrapper{
+    margin-top: 100px;
+    text-align: center;
+    font-size: 90%;
+}

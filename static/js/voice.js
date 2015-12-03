@@ -34,6 +34,9 @@ $(document).ready(function() {
             if (event.error == 'not-allowed') {
                 NOT_ALLOWED_ERROR = true;
                 restart_on_error = false;
+                setTimeout(function(){
+                    $("#voice_control_recording_indicator").html("<h4>the browser does not have permission to access the microphone... :(</h4>");
+                }, 1000);
             }
             if (restart_on_error == true){
                 startSpeechToText();
