@@ -211,7 +211,7 @@ function set_progress_bar_value(value){
 }
 
 function init_stuff(){
-    freesound.setToken("d31c795be3f70f7f04b21aeca4c5b48a599db6e9");
+    freesound.setToken("YOUR_API_KEY_TOKEN");
     set_progress_bar_value(0);
     $('#bpm_input').val(TEMPO);
     //load_from_freesound_text_search("percussion", all_triggers=true);
