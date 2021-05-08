@@ -1,4 +1,4 @@
-eventlet==0.17.4
+eventlet==0.31.0
 Flask==1.0
 Flask-SocketIO==1.0
 greenlet==0.4.9
